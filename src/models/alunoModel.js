@@ -49,11 +49,11 @@ export default class ExemploModel {
             where.materia = { contains: filtros.materia, mode: 'insensitive' };
         }
 
-        return prisma.aluno.findMany({ where });
+        return prisma.exemplo.findMany({ where });
     }
 
     static async buscarPorId(id) {
-        const data = await prisma.aluno.findUnique({ where: { id } });
+        const data = await prisma.exemplo.findUnique({ where: { id } });
         if (!data) {
             return null;
         }

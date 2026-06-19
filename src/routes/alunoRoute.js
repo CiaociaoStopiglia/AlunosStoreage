@@ -1,5 +1,5 @@
 import express from 'express';
-import * as controller from '../controllers/alunoController.js'
+import * as controller from '../controllers/alunoController.js';
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ router.get('/', controller.buscarTodos);
 router.get('/:id', controller.buscarPorId);
 router.put('/:id', controller.atualizar);
 router.delete('/:id', controller.deletar);
-router.post('/:id/foto', upload.single('foto'), controller.atualizarFoto);
+// A linha do 'upload.single' foi removida daqui!
 
 export default router;
