@@ -1,1 +1,1 @@
-preciso terminar arquivos do LIB. parei no helpers
+https://backend-supabase-render-ygfq.onrender.com/api/alunos/1/foto
