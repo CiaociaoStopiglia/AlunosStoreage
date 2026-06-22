@@ -1,6 +1,6 @@
 import prisma from '../lib/services/prismaClient.js';
 
-export default class ExemploModel {
+export default class AlunoModel {
     constructor({ id = null, nome, turma, materia, foto = null } = {}) {
         this.id = id;
         this.nome = nome;

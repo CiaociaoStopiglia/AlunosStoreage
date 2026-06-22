@@ -1,8 +1,5 @@
 import AlunoModel from '../models/alunoModel.js';
-import {
-    upload as uploadViaUrl,
-    deletar as deletarStorage
-} from '../lib/helpers/arquivoHelper.js'
+import { uploadViaUrl, deletar as deletarStorage } from '../lib/helpers/arquivoHelper.js';
 
 export const criar = async (req, res) => {
     try {
@@ -12,15 +9,15 @@ export const criar = async (req, res) => {
 
         const { nome, turma, materia, foto } = req.body;
 
-        if (!nome){
+        if (!nome) {
             return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
         }
-         if (!turma) {
-             return res.status(400).json({ error: 'O campo "turma" é obrigatório!' });
-         }
-         if (!materia) {
-             return res.status(400).json({ error: 'O campo "materia" é obrigatório!' });
-         }
+        if (!turma) {
+            return res.status(400).json({ error: 'O campo "turma" é obrigatório!' });
+        }
+        if (!materia) {
+            return res.status(400).json({ error: 'O campo "materia" é obrigatório!' });
+        }
 
         const aluno = new AlunoModel({ nome, turma, materia, foto: foto || null });
         const data = await aluno.criar();
@@ -101,7 +98,9 @@ export const atualizar = async (req, res) => {
 
         const data = await aluno.atualizar();
 
-        return res.status(200).json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
+        return res
+            .status(200)
+            .json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
     } catch (error) {
         console.error('Erro ao atualizar:', error);
         return res.status(500).json({ error: 'Erro ao atualizar registro.' });
@@ -124,7 +123,12 @@ export const deletar = async (req, res) => {
 
         await aluno.deletar();
 
-        return res.status(200).json({ message: `O registro "${aluno.nome}" foi deletado com sucesso!`, deletado: aluno });
+        return res
+            .status(200)
+            .json({
+                message: `O registro "${aluno.nome}" foi deletado com sucesso!`,
+                deletado: aluno,
+            });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });
@@ -143,7 +147,7 @@ export const atualizarFoto = async (req, res) => {
             return res.status(404).json({ error: 'Aluno não encontrado.' });
         }
 
-        const imageUrl = req.body ? (req.body.url || req.body.foto) : null;
+        const imageUrl = req.body ? req.body.url || req.body.foto : null;
 
         if (!imageUrl) {
             return res
@@ -155,7 +159,7 @@ export const atualizarFoto = async (req, res) => {
             try {
                 await deletarStorage(aluno.foto);
             } catch (err) {
-                console.error('Erro ao deletar foto antiga:', err)
+                console.error('Erro ao deletar foto antiga:', err);
             }
         }
 
@@ -167,10 +171,57 @@ export const atualizarFoto = async (req, res) => {
         return res.status(200).json({
             message: ' Foto update com sucesso!',
             url: data.foto,
-            data
+            data,
         });
     } catch (error) {
         console.error('Erro ao fazer upload da foto:', error);
-        return res.status(500).json({ error: 'Erro ao fazer upload/processamento da foto do aluno.' });
+        return res
+            .status(500)
+            .json({ error: 'Erro ao fazer upload/processamento da foto do aluno.' });
     }
 };
+
+export const criarFoto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Id inválido.'})
+        }
+
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
+        if (!aluno) {
+            return res.status(404).json({ error: 'Aluno não encontrado.'})
+        }
+
+        const imageUrl = req.body ? req.body.url || req.body.foto : null
+
+        if (!imageUrl) {
+            return res
+                .status(400)
+                .json({ error: 'Envie um link na propriedade url ou foto via JSON.'})
+        }
+
+        if (aluno.foto) {
+            try {
+                await deletarStorage(aluno.foto);
+            } catch (err) {
+                console.error('Erro ao deletar foto antiga:', err)
+            }
+        }
+
+        const fotoUrl = await uploadViaUrl(parseInt(id),
+            imageUrl);
+
+        aluno.foto = fotoUrl;
+        const data = await aluno.atualizar();
+
+        return res.status(201).json({
+            message: 'Foto criada e vinculada com sucesso!',
+            url: data.foto,
+            data,
+        });
+    } catch (error) {
+        console.error('Erro ao processar foto:', error);
+        return res.status(500).json({ error: 'Erro ao criar/processar a foto do aluno.' });
+    }
+}
