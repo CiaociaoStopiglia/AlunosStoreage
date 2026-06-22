@@ -12,8 +12,6 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('🚀 API funcionando');
 });
-
-// Rotas (apiKey comentada para você testar sem travas)
 app.use('/api/alunos', alunoRoutes);
 
 app.use((req, res) => {
