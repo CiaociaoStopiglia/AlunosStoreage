@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import alunoRoutes from './routes/alunoRoute.js';
+import { apiKey } from './lib/middlewares/apiKey.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,7 +15,7 @@ app.get('/', (req, res) => {
 });
 
 // Rotas
-app.use('/api/alunos', alunoRoutes);
+app.use('/api/alunos', apiKey, alunoRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Rota não encontrada' });

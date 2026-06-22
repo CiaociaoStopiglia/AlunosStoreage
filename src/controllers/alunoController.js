@@ -1,4 +1,8 @@
 import AlunoModel from '../models/alunoModel.js';
+import {
+    upload as uploadViaUrl,
+    deletar as deletarStorage
+} from '../lib/helpers/arquivoHelper.js'
 
 export const criar = async (req, res) => {
     try {
@@ -130,42 +134,43 @@ export const deletar = async (req, res) => {
 export const atualizarFoto = async (req, res) => {
     try {
         const { id } = req.params;
-
         if (isNaN(id)) {
-            return res.status(400).json({ error: 'Id inválido'})
+            return res.status(400).json({ error: 'Id inválido' });
         }
 
-            const aluno = await AlunoModel.buscarPorId(parseInt(id));
-            if (!aluno) {
-                return res.status(404).json({ error: 'Aluno não encontrado.' });
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
+        if (!aluno) {
+            return res.status(404).json({ error: 'Aluno não encontrado.' });
+        }
+
+        const imageUrl = req.body ? (req.body.url || req.body.foto) : null;
+
+        if (!imageUrl) {
+            return res
+                .status(400)
+                .json({ error: 'Envie um link na propriedade "url" ou "foto" via JSON.' });
+        }
+
+        if (aluno.foto) {
+            try {
+                await deletarStorage(aluno.foto);
+            } catch (err) {
+                console.error('Erro ao deletar foto antiga:', err)
             }
+        }
 
-            let fotoUrl = null
-            const imageUrl = req.body ? (req.body.url || req.body.foto) : null;
+        const fotoUrl = await uploadViaUrl(parseInt(id), imageUrl);
 
-            if (req.file) {
-                if (aluno.foto) {
-                    try {
-                        await deletarStorage(aluno.foto);
-                    } catch (err) {
-                        console.error('Erro ao deletar foto antiga:', err);
-                    }
-                }
-                fotoUrl = await uploadViaUrl(parseInt(id), imageUrl);
-            } else {
-                return res.status(400).json({ error: 'Envie um arquivo na propriedade "foto" via form-data ou um link na propriedade "url" ou "foto" via JSON.'})
-            }
+        aluno.foto = fotoUrl;
+        const data = await aluno.atualizar();
 
-            aluno.foto = fotoUrl;
-            const data = await aluno.atualizar();
-
-            return res.status(200).json({
-                message: 'Foto atualizada com sucesso!',
-                url: data.foto,
-                data
-            })
-        } catch (error) {
+        return res.status(200).json({
+            message: ' Foto update com sucesso!',
+            url: data.foto,
+            data
+        });
+    } catch (error) {
         console.error('Erro ao fazer upload da foto:', error);
         return res.status(500).json({ error: 'Erro ao fazer upload/processamento da foto do aluno.' });
     }
-    };
+};

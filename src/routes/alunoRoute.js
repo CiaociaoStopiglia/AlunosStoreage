@@ -8,6 +8,5 @@ router.get('/', controller.buscarTodos);
 router.get('/:id', controller.buscarPorId);
 router.put('/:id', controller.atualizar);
 router.delete('/:id', controller.deletar);
-// A linha do 'upload.single' foi removida daqui!
 
 export default router;
